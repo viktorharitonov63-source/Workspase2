@@ -1,0 +1,11 @@
+meta:
+  environment: python
+  toolchain:
+    name: pip
+    version: "3.13"
+
+run:
+  command: python tgbotishe.py
+  
+persistent:
+  - /data
