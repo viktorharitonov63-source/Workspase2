@@ -3,7 +3,6 @@ import requests
 from telegram import Update, Bot
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 from dotenv import load_dotenv
-import asyncio
 
 load_dotenv()
 
@@ -14,7 +13,7 @@ PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
 PERPLEXITY_URL = "https://api.perplexity.ai/chat/completions"
 
 # Функция для генерации текста через Perplexity API
-async def generate_post(prompt: str) -> str:
+def generate_post(prompt: str) -> str:
     headers = {
         "Authorization": f"Bearer {PERPLEXITY_API_KEY}",
         "Content-Type": "application/json"
@@ -45,7 +44,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Генерирую пост, подожди... ⏳")
 
     try:
-        text = await generate_post(user_prompt)
+        text = generate_post(user_prompt)  # sync функция
         await update.message.reply_text(f"Сгенерированный пост:\n\n{text}")
 
         # Отправка в канал
@@ -56,15 +55,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"Произошла ошибка: {e}")
 
-# Запуск бота
-async def main():
+# Основной запуск бота
+if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
+    # Добавляем обработчики
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     print("Бот запущен...")
-    await app.run_polling()
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    # На Windows просто запускаем без asyncio.run()
+    app.run_polling()
